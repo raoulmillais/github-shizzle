@@ -1,0 +1,28 @@
+{
+	"name": "github-api", 
+	"version": "0.1.0",
+	"description"	: "Playing around with the github API",
+	"homepage": [ 
+		"https://github.com/raoulmillais/node-7digital-api"
+	],
+	"repository": { 
+		"type" : "git",
+        	"url"  : "https://github.com/raoulmillais/node-7digital-api.git"
+    	},
+	"keywords": [
+		"api", 
+		"nodejs",
+		"github"
+	],
+	"author": "Raoul Millais <raoul@raoulmillais.com> (http://www.raoulmillais.com/)",
+	"licenses": [
+		"MIT"
+	],
+	"engines": [ "node >= 0.4.1" ],
+	"dependencies": {
+		"github": "0.0.6",
+		"eyes": "0.1.6",
+		"express": "2.4.3",
+		"jade": "0.13.0",
+	}
+}
