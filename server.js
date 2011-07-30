@@ -36,6 +36,15 @@ server.get('/github/authorised', function storeToken(req, res) {
 		eyes.inspect(response);
 		console.log('ERROR');
 		eyes.inspect(err);
+		var accessToken = response.access_token,
+			username;
+
+		github.authenticateOAuth(accessToken).getUserApi().show('', function showUser(err, response) {
+			console.log('GOT USER');
+			eyes.inspect(response);
+			console.log('ERROR GETTING USER');
+			eyes.inspect(err);
+		});
 	});
 
 });
