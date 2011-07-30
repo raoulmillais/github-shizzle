@@ -1,0 +1,3 @@
+[submodule "support/github"]
+	path = support/github
+	url = git@github.com:raoulmillais/node-github.git

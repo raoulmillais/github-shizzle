@@ -1,14 +1,11 @@
 {
-	"name": "github-api", 
+	"name": "github-api",
 	"version": "0.1.0",
-	"description"	: "Playing around with the github API",
-	"homepage": [ 
-		"https://github.com/raoulmillais/node-7digital-api"
-	],
-	"repository": { 
+	"description": "Playing around with the github API",
+	"repository": {
 		"type" : "git",
-        	"url"  : "https://github.com/raoulmillais/node-7digital-api.git"
-    	},
+		"url"  : "https://github.com/raoulmillais/github-shizzle.git"
+	},
 	"keywords": [
 		"api", 
 		"nodejs",
@@ -18,11 +15,10 @@
 	"licenses": [
 		"MIT"
 	],
-	"engines": [ "node >= 0.4.1" ],
+	"engines": { "node": " >= 0.4.1 < 0.5.0" },
 	"dependencies": {
-		"github": "0.0.6",
 		"eyes": "0.1.6",
 		"express": "2.4.3",
-		"jade": "0.13.0",
+		"jade": "0.13.0"
 	}
 }
