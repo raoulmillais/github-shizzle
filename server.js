@@ -13,40 +13,56 @@ server.get('/', function showHomePage(req, res) {
 });
 
 server.get('/github/authorised', function storeToken(req, res) {
-	console.log(GitHubApi);
 	var url = require('url').parse(req.url),
 		qs= require('querystring').parse(url.query),
-		github = new GitHubApi(true),
-		postData = {
-			code: qs.code,
-			client_id: config.githubapplicationclientid,
-			client_secret: config.githubclientsecret
-		},
-		reqOptions = {
-			url: ':protocol://github.com/:path',
-			path: '',
-			format: 'text',
-			method: 'https'
-		};
-	eyes.inspect(url);
-	eyes.inspect(postData);
+		github = new GitHubApi(true);
 
-	github.getOAuthAccessToken(qs.code, config.githubapplicationclientid, config.githubclientsecret, function processToken(err, response) {
-		console.log('ACCESS TOKEN');
-		eyes.inspect(response);
-		console.log('ERROR');
-		eyes.inspect(err);
-		var accessToken = response.access_token,
+	// TODO: Create a user with the access code and put it in session
+	github.getOAuthAccessToken(qs.code, config.githubapplicationclientid, config.githubclientsecret, 
+								function handleTokenResponse(tokenErr, tokenResponse) {
+		var accessToken,
 			username;
 
-		github.authenticateOAuth(accessToken).getUserApi().show('', function showUser(err, response) {
-			console.log('GOT USER');
-			eyes.inspect(response);
-			console.log('ERROR GETTING USER');
-			eyes.inspect(err);
+		if (tokenErr) {
+			console.error('Error getting access token: %j', tokenErr);
+			res.redirect('/github/error');
+			return;
+		}
+
+		accessToken = tokenResponse.access_token,
+		console.log('Received access token');
+		// TODO: Store the access token in User in session
+		// TODO: Redirect to create store page
+
+		github.authenticateOAuth(accessToken);
+		
+		github.getUserApi().show('', function handleShowUserResponse(userErr, userResponse) {
+			if (userErr) {
+				console.error('Error getting user: %j', userErr);
+			}
+			console.log('Received user info: %j', userResponse);
+			// TODO: Create a user and store the access code
+			// TODO: Store the token in session
+		});
+
+		// TODO: Check whether the user has already forked the repository
+		// TODO: Get the repository to fork from config
+		github.getRequest().post('repos/fork/7digital/7digital-python-api-wrapper',
+									{} /* postParameters */, null /* requestOptions */,
+									function handlerForkResponse(forkError, forkResponse) {
+			if (forkError) {
+				console.error('Error forking repository: %j', forkError);
+			}
+			console.log('Successfully forked repository: %j', forkResponse);
+
+			// TODO: Clone the new fork on the server and store the path on the User
 		});
 	});
 
+});
+
+server.get('/github/error', function showError(req, res) {
+	res.render('error.jade', {});
 });
 
 server.listen(3000);
