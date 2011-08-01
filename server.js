@@ -4,6 +4,7 @@ var express = require('express'),
 	jade = require('jade'),
 	config = require('./config').config,
 	User = require('./lib/user').User,
+	Step = require('step'),
 	GitHubApi = require('./support/github/lib/github').GitHubApi,
 	server;
 
@@ -49,26 +50,41 @@ server.get('/github/authorised', function storeToken(req, res) {
 });
 
 server.get('/github/user', function showUser(req, res) {
-	var github = new GitHubApi(true);
+	var github = new GitHubApi(true),
+		user;
 
 	// TODO: Handle no accessToken
 	github.authenticateOAuth(req.session.accessToken);
-	
-	github.getUserApi().show('', function handleShowUserResponse(userErr, userResponse) {
-		var user;
 
-		if (userErr) {
-			console.error('Error getting user: %j', userErr);
-			res.redirect('/github/error');
-			return;
+	Step(
+		function getUserInfo() {
+			github.getUserApi().show('', this);
+		},
+		function handleShowUserResponseAndGetRepos(userErr, userResponse) {
+			if (userErr) {
+				console.error('Error getting user: %j', userErr);
+				res.redirect('/github/error');
+				return;
+			}
+
+			console.log('Received user info');
+
+			user = new User(req.session.user.code);
+			user.setUserInfo(userResponse);
+			github.getRepoApi().getUserRepos(user.username, this);
+		}, 
+		function handleReposReponseAndRenderView(reposErr, reposResponse) {
+			if (reposErr) {
+				console.error('Error getting user: %j', reposErr);
+				res.redirect('/github/error');
+				return;
+			}
+
+			console.log('Received user repos');
+			req.session.repos = reposResponse;
+			res.render('user.jade', { locals: { user: user, repos: reposResponse } });
 		}
-
-		console.log('Received user info: %j', userResponse);
-
-		var user = new User(req.session.user.code);
-		user.setUserInfo(userResponse);
-		res.render('user.jade', { locals: { user: user } });
-	});
+	);
 
 });
 
@@ -80,15 +96,15 @@ server.get('/github/fork', function createFork(req, res) {
 
 	// TODO: Check whether the user has already forked the repository
 	// TODO: Get the repository to fork from config
-	github.getRequest().post('repos/fork/7digital/7digital-python-api-wrapper',
+	github.getRequest().post('repos/fork/raoulmillais/7digital-store-template',
 								{} /* postParameters */, null /* requestOptions */,
 								function handlerForkResponse(forkError, forkResponse) {
 		if (forkError) {
 			console.error('Error forking repository: %j', forkError);
 		}
-		console.log('Successfully forked repository: %j', forkResponse);
+		console.log('Successfully forked repositoryj');
 
-		// TODO: Clone the new fork on the server and store the path on the User
+		res.redirect('/github/user');
 	});
 
 });

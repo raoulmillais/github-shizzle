@@ -19,6 +19,7 @@
 	"dependencies": {
 		"eyes": "0.1.6",
 		"express": "2.4.3",
-		"jade": "0.13.0"
+		"jade": "0.13.0",
+		"step": "0.0.4"
 	}
 }

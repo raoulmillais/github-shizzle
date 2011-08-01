@@ -1,3 +1,10 @@
 h1 Welcome #{user.name}
 p 	Click 
 	a(href='/') here to connect again.
+h2 Your repositories
+ul
+	- each repo in repos
+		li= repo.name
+
+p
+	a(href='/github/fork') Fork some shit!
