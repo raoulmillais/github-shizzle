@@ -5,6 +5,7 @@ var express = require('express'),
 	config = require('./config').config,
 	User = require('./lib/user').User,
 	Step = require('step'),
+	Git = require('treeeater').Git,
 	GitHubApi = require('./support/github/lib/github').GitHubApi,
 	server;
 
@@ -89,20 +90,37 @@ server.get('/github/user', function showUser(req, res) {
 });
 
 server.get('/github/fork', function createFork(req, res) {
-	var github = new GitHubApi(true);
+	var github = new GitHubApi(true),
+		git = new Git({ cwd: config.reposPath });
 
 	// TODO: Handle no accessToken
 	github.authenticateOAuth(req.session.accessToken);
 
 	// TODO: Check whether the user has already forked the repository
-	// TODO: Get the repository to fork from config
-	github.getRequest().post('repos/fork/raoulmillais/7digital-store-template',
+	Step(
+		function requestToFork() {
+			github.getRequest().post('repos/fork/' + config.storeTemplateAccount + '/' + config.storeTemplateRepo,
+								{} /* postParameters */, null /* requestOptions */, this);
+
+		},
+		function handleForkResponseAndClone(forkErr, forkResponse) {
+			if (forkErr) {
+				console.error('Error forking repository: %j', forkErr);
+			}
+
+			console.log('Successfully forked repositoryj');
+			git.clone(forkResponse.clone_url, this);
+		},
+		function renderView(cloneErr, cloneResponse) {
+			if (cloneErr) {
+				console.error('Error cloning the new fork: %j', cloneErr);
+			}
+			console.log('Cloned the new fork');
+		}
+	);
+	github.getRequest().post('repos/fork/' + config.storeTemplateAccount + '/' + config.storeTemplateRepo,
 								{} /* postParameters */, null /* requestOptions */,
 								function handlerForkResponse(forkError, forkResponse) {
-		if (forkError) {
-			console.error('Error forking repository: %j', forkError);
-		}
-		console.log('Successfully forked repositoryj');
 
 		res.redirect('/github/user');
 	});
