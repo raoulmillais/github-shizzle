@@ -57,6 +57,8 @@ server.get('/github/user', function showUser(req, res) {
 	// TODO: Handle no accessToken
 	github.authenticateOAuth(req.session.accessToken);
 
+	// TODO: Work out whether we already have this users details 
+	// and only update on a new session
 	Step(
 		function getUserInfo() {
 			github.getUserApi().show('', this);
@@ -85,9 +87,18 @@ server.get('/github/user', function showUser(req, res) {
 			req.session.repos = reposResponse;
 			res.render('user.jade', { locals: { user: user, repos: reposResponse } });
 		}
+
+		// TODO: Add a textbox to view to allow creation of an ssh key given that email
 	);
 
 });
+
+// TODO: Add a new route that the email for ssh key is posted to
+// TODO: 1. Generate an RSA-based ssh key pair
+// TODO: 2. Save the both parts somewhere for the user (config)
+// TODO: 3. POST the new key to /user/keys
+
+// How the fuck do we get git to work properly with potentially thousands of keys?!
 
 server.get('/github/fork', function createFork(req, res) {
 	var github = new GitHubApi(true),
@@ -106,6 +117,7 @@ server.get('/github/fork', function createFork(req, res) {
 		function handleForkResponseAndClone(forkErr, forkResponse) {
 			if (forkErr) {
 				console.error('Error forking repository: %j', forkErr);
+				// TODO: WOrk out how to stop step processing
 			}
 
 			console.log('Successfully forked repositoryj');
@@ -115,15 +127,11 @@ server.get('/github/fork', function createFork(req, res) {
 			if (cloneErr) {
 				console.error('Error cloning the new fork: %j', cloneErr);
 			}
+
 			console.log('Cloned the new fork');
+			res.redirect('/github/user');
 		}
 	);
-	github.getRequest().post('repos/fork/' + config.storeTemplateAccount + '/' + config.storeTemplateRepo,
-								{} /* postParameters */, null /* requestOptions */,
-								function handlerForkResponse(forkError, forkResponse) {
-
-		res.redirect('/github/user');
-	});
 
 });
 
