@@ -7,7 +7,9 @@ var express = require('express'),
 	Step = require('step'),
 	Git = require('treeeater').Git,
 	GitHubApi = require('./support/github/lib/github').GitHubApi,
+	Gensshkey = require('./lib/gensshkey').Gensshkey,
 	server;
+	
 
 server = express.createServer();
 server.use(express.cookieParser());
@@ -100,6 +102,14 @@ server.get('/github/user', function showUser(req, res) {
 // TODO: 3. POST the new key to /user/keys
 
 // How the fuck do we get git to work properly with potentially thousands of keys?!
+
+server.get('/github/user/sshkey/create', function(req, res) {
+    var key_generator = new Gensshkey("sample@me.com'")
+    key_generator.generate();
+    
+    res.redirect('/github/user')
+});
+
 
 server.get('/github/fork', function createFork(req, res) {
 	var github = new GitHubApi(true),
