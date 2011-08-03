@@ -105,7 +105,10 @@ server.get('/github/user', function showUser(req, res) {
 
 server.get('/github/user/sshkey/create', function(req, res) {
     var key_generator = new Gensshkey("sample@me.com'")
-    key_generator.generate();
+    var key = key_generator.generate();
+    if (key){    
+        res.session.item = key;
+    }
     
     res.redirect('/github/user')
 });
